@@ -4,7 +4,7 @@ from settings import *
 from random import choice, uniform
 
 
-class Player(pygame.sprite.Sprite):
+class Paddle(pygame.sprite.Sprite):
     def __init__(self, groups):
         super().__init__(groups)
 
@@ -20,21 +20,39 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_frect(center=POS['player'])
         self.old_rect = self.rect.copy()
         self.direction = 0
-        self.speed = SPEED['player']
 
     def move(self, delta_time):
         self.rect.centery += self.direction * self.speed * delta_time
         self.rect.top = 0 if self.rect.top < 0 else self.rect.top
         self.rect.bottom = WINDOW_HEIGHT if self.rect.bottom > WINDOW_HEIGHT else self.rect.bottom
 
-    def get_direction(self):
-        keys = pygame.key.get_pressed()
-        self.direction = int(keys[pygame.K_DOWN]) - int(keys[pygame.K_UP])
-
     def update(self, delta_time):
         self.old_rect = self.rect.copy()
         self.get_direction()
         self.move(delta_time)
+
+
+class Player(Paddle):
+    def __init__(self, groups):
+        super().__init__(groups)
+
+        self.speed = SPEED['player']
+
+    def get_direction(self):
+        keys = pygame.key.get_pressed()
+        self.direction = int(keys[pygame.K_DOWN]) - int(keys[pygame.K_UP])
+
+
+class Opponent(Paddle):
+    def __init__(self, groups, ball):
+        super().__init__(groups)
+
+        self.rect.center = POS['opponent']
+        self.speed = SPEED['opponent']
+        self.ball = ball
+
+    def get_direction(self):
+        self.direction = 1 if self.rect.centery < self.ball.rect.centery else -1
 
 
 class Ball(pygame.sprite.Sprite):
@@ -70,14 +88,14 @@ class Ball(pygame.sprite.Sprite):
                         self.direction.x *= -1
                     elif self.rect.left <= sprite.rect.right and self.old_rect.left >= sprite.old_rect.left:
                         self.rect.left = sprite.rect.right
-                        self.direction *= -1
+                        self.direction.x *= -1
                 elif direction == 'vertical':
                     if self.rect.bottom >= sprite.rect.top and self.old_rect.bottom <= sprite.old_rect.top:
                         self.rect.bottom = sprite.rect.top
                         self.direction.y *= -1
                     elif self.rect.top <= sprite.rect.bottom and self.old_rect.top >= sprite.old_rect.bottom:
                         self.rect.top = sprite.rect.bottom
-                        self.direction *= -1
+                        self.direction.y *= -1
 
     def wall_collision(self):
         if self.rect.top <= 0:
