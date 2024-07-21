@@ -1,5 +1,3 @@
-import pygame
-
 from settings import *
 from random import choice, uniform
 
@@ -56,9 +54,10 @@ class Opponent(Paddle):
 
 
 class Ball(pygame.sprite.Sprite):
-    def __init__(self, groups, paddle_sprites):
+    def __init__(self, groups, paddle_sprites, update_score):
         super().__init__(groups)
         self.paddle_sprites = paddle_sprites
+        self.update_score = update_score
 
         # image
         self.image = pygame.Surface(SIZE['ball'], pygame.SRCALPHA)
@@ -104,12 +103,13 @@ class Ball(pygame.sprite.Sprite):
         if self.rect.bottom >= WINDOW_HEIGHT:
             self.rect.bottom = WINDOW_HEIGHT
             self.direction.y *= -1
-        if self.rect.left <= 0:
-            self.rect.left = 0
-            self.direction.x *= -1
-        if self.rect.right >= WINDOW_WIDTH:
-            self.rect.right = WINDOW_WIDTH
-            self.direction.x *= -1
+        if self.rect.left <= 0 or self.rect.right >= WINDOW_WIDTH:
+            self.update_score('player' if self.rect.x < WINDOW_WIDTH / 2 else 'opponent')
+            self.reset()
+
+    def reset(self):
+        self.rect.center = (WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
+        self.direction = pygame.math.Vector2(choice((1, -1)), uniform(0.7, 0.8) * choice((-1, 1)))
 
     def update(self, delta_time):
         self.old_rect = self.rect.copy()

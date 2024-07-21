@@ -1,4 +1,4 @@
-import pygame.display
+import pygame.draw
 
 from settings import *
 from sprites import * 
@@ -17,9 +17,34 @@ class Game:
         self.paddle_sprites = pygame.sprite.Group()
 
         # sprites
-        self.ball = Ball(self.all_sprites, self.paddle_sprites)
+        self.ball = Ball(self.all_sprites, self.paddle_sprites, self.update_score)
         self.player = Player((self.all_sprites, self.paddle_sprites))
         self.opponent = Opponent((self.all_sprites, self.paddle_sprites), self.ball)
+
+        # score
+        self.score = {'player': 0, 'opponent': 0}
+        self.font = pygame.font.Font(None, 160)
+
+    def display_score(self):
+        # player
+        player_surf = self.font.render(str(self.score['player']), True, COLORS['bg detail'])
+        player_rect = player_surf.get_frect(midleft=(WINDOW_WIDTH / 2 + 50, WINDOW_HEIGHT / 2))
+        self.display_surface.blit(player_surf, player_rect)
+
+        #opponent
+        opponent_surf = self.font.render(str(self.score['opponent']), True, COLORS['bg detail'])
+        opponent_rect = opponent_surf.get_frect(midright=(WINDOW_WIDTH / 2 - 50, WINDOW_HEIGHT / 2))
+        self.display_surface.blit(opponent_surf, opponent_rect)
+
+        # line separator
+        pygame.draw.line(self.display_surface,
+                         COLORS['bg detail'],
+                         (WINDOW_WIDTH / 2, 0),
+                         (WINDOW_WIDTH / 2, WINDOW_HEIGHT),
+                         10)
+
+    def update_score(self, side):
+        self.score['player' if side == 'player' else 'opponent'] += 1
 
     def run(self):
         while self.running:
@@ -35,6 +60,7 @@ class Game:
 
             #draw
             self.display_surface.fill(COLORS['bg'])
+            self.display_score()
             self.all_sprites.draw(self.display_surface)
             pygame.display.update()
         pygame.quit()
