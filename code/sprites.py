@@ -14,6 +14,14 @@ class Paddle(pygame.sprite.Sprite):
                          0,
                          5)
 
+        # shadow surface
+        self.shadow_surf = self.image.copy()
+        pygame.draw.rect(self.shadow_surf,
+                         COLORS['paddle shadow'],
+                         pygame.FRect((0, 0), SIZE['paddle']),
+                         0,
+                         5)
+
         # rect & movement
         self.rect = self.image.get_frect(center=POS['player'])
         self.old_rect = self.rect.copy()
@@ -66,16 +74,28 @@ class Ball(pygame.sprite.Sprite):
                            (SIZE['ball'][0] / 2, SIZE['ball'][1] / 2),
                            SIZE['ball'][0] / 2)
 
+        # shadow surface
+        self.shadow_surf = self.image.copy()
+        pygame.draw.circle(self.shadow_surf,
+                           COLORS['ball shadow'],
+                           (SIZE['ball'][0] / 2, SIZE['ball'][1] / 2),
+                           SIZE['ball'][0] / 2)
+
         # rect & movement
         self.rect = self.image.get_frect(center=(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2))
         self.old_rect = self.rect.copy()
         self.direction = pygame.math.Vector2(choice((1, -1)), uniform(0.7, 0.8) * choice((-1, 1)))
         self.speed = SPEED['ball']
+        self.speed_modifier = 0
+
+        # reset timer
+        self.start_time = pygame.time.get_ticks()
+        self.reset_timer = 1200
 
     def move(self, delta_time):
-        self.rect.x += self.direction.x * self.speed * delta_time
+        self.rect.x += self.direction.x * self.speed * delta_time * self.speed_modifier
         self.collision('horizontal')
-        self.rect.y += self.direction.y * self.speed * delta_time
+        self.rect.y += self.direction.y * self.speed * delta_time * self.speed_modifier
         self.collision('vertical')
 
     def collision(self, direction):
@@ -110,8 +130,16 @@ class Ball(pygame.sprite.Sprite):
     def reset(self):
         self.rect.center = (WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
         self.direction = pygame.math.Vector2(choice((1, -1)), uniform(0.7, 0.8) * choice((-1, 1)))
+        self.start_time = pygame.time.get_ticks()
+
+    def timer(self):
+        if pygame.time.get_ticks() - self.start_time >= self.reset_timer:
+            self.speed_modifier = 1
+        else:
+            self.speed_modifier = 0
 
     def update(self, delta_time):
         self.old_rect = self.rect.copy()
+        self.timer()
         self.move(delta_time)
         self.wall_collision()

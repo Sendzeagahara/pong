@@ -1,7 +1,8 @@
 import json
 
 from settings import *
-from sprites import * 
+from sprites import *
+from groups import AllSprites
 
 
 class Game:
@@ -13,7 +14,7 @@ class Game:
         self.running = True
 
         # groups
-        self.all_sprites = pygame.sprite.Group()
+        self.all_sprites = AllSprites()
         self.paddle_sprites = pygame.sprite.Group()
 
         # sprites
@@ -67,7 +68,7 @@ class Game:
             #draw
             self.display_surface.fill(COLORS['bg'])
             self.display_score()
-            self.all_sprites.draw(self.display_surface)
+            self.all_sprites.draw()
             pygame.display.update()
         pygame.quit()
 
